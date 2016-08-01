@@ -5,6 +5,12 @@
 
 using namespace std;
 
+// A self-contained implementation of Kruskal's MST algorithm
+// as described by http://highered.mheducation.com/sites/0073523402/index.html.
+// I believe it is correct, at least on some initial test input, but hopefully
+// I will soon be able to provide a more comprehensive test suite for
+// correctness and (asymptotic) performance.
+
 struct edge {
     int u = -1;
     int v = -1;
@@ -20,8 +26,10 @@ ostream& operator<<(ostream& o, const edge& e) {
     return o;
 }
 
-// only defined over a set of integers, exploiting the
-// value-is-key trick as always.
+// We assume the set upon which we build the disjoint
+// unions is [0,n).
+// This is where a lot of interesting work happens to
+// make the runtime fast.
 class disjoint_unions {
     private:
     struct set_type {
@@ -65,6 +73,11 @@ auto edge_weight_sorter = [](const edge e1, const edge e2) { return e1.w < e2.w;
 
 int main(int argc, char* argv[]) {
     int node_count, edge_count;
+
+    //////////////////////////////////////////////////////////////
+    // Read in the input and initialize the disjoint
+    // union structure.
+    //////////////////////////////////////////////////////////////
     cin >> node_count;
     cin >> edge_count;
 
@@ -82,17 +95,25 @@ int main(int argc, char* argv[]) {
         edges[i] = e;
     }
 
+    // Initialize the container to hold the MST:
     // largest possible size--right? if graph not connect then only shrinks MST.
     vector<edge> MST(node_count+1); 
-    int s = 0;
-    // This is where the magic happens!!!
+
+
+    // This is the actual algorithm! It is so small, as we've already
+    // defined all the helping structures.
+    //// We start by sorting the edges by "priority":
     sort(begin(edges), end(edges), edge_weight_sorter);
+    int s = 0;
     for (auto&& e : edges) {
+        // If an edge is characterized by a different set, we
+        // can add them without adding cycles.
         if (unions.union_find(e.u) != unions.union_find(e.v)) {
             MST[s++] = e;
             unions.make_union(e.u, e.v);
         }
     }
+    // That's the whole algorithm! Now we output the result.
 
     cout << "MST" << endl;
     for (int i = 0; i < s; ++i) {
