@@ -6,22 +6,25 @@
 #include <vector>
 #include <array>
 
+// Trying to get a very "explicit" implementation of Prim's.
+// This... doesn't really work. Need to revisit it at some point.
+
 using namespace std;
 
 struct edge {
     int u = -1;
     int v = -1;
-    int w = -1;
+    double w = -1;
     public:
     edge() {}
-    edge(int u, int v, int w): u(u), v(v), w(w) {}
+    edge(int u, int v, double w): u(u), v(v), w(w) {}
 };
 
 
-const int infinity = numeric_limits<int>::max();
+const double infinity = numeric_limits<double>::max();
 
 
-int delete_min(list<int>& priority_queue, const vector<int>& costs) {
+int delete_min(list<int>& priority_queue, const vector<double>& costs) {
     auto min_elt_ptr = min_element(begin(priority_queue), end(priority_queue),
                          [&](int x, int y) { return costs[x] < costs[y]; });
 
@@ -40,21 +43,19 @@ void decrease_key(list<int>& priority_queue, const vector<int>& costs, int v) {
 
 class weighted_undirected_graph {
     private:
-        const int firstnode = 0;
         vector<list<int>> edges;
-        map<pair<int,int>, int> weights;
+        map<pair<int,int>, double> weights;
     public:
-        weighted_undirected_graph(const int firstnode, const int nodecount, const int edgecount):
-            firstnode(firstnode), edges(nodecount+firstnode) {
-
-        }
-        void add_edge(int u, int v, int w) {
+        weighted_undirected_graph(const int nodecount, const int edgecount):
+            edges(nodecount) {}
+        void add_edge(int u, int v, double w) {
             if (u > v) { swap(u,v); }
             weights[make_pair(u,v)] = w;
+            // check for multi-edges?
             edges[u].push_back(v);
             edges[v].push_back(u);
         }
-        int edge_weight(int u, int v) const {
+        double edge_weight(int u, int v) const {
             if (u > v) { swap(u,v); }
             return weights.find(make_pair(u,v))->second;
         }
@@ -82,10 +83,11 @@ int main(int argc, char* argv[]) {
     ++node_count;
     cin >> edge_count;
 
-    weighted_undirected_graph g(1,node_count,edge_count);
+    weighted_undirected_graph g(node_count,edge_count);
 
     for (int i = 0; i < edge_count; ++i) {
-        int u, v, w;
+        int u, v;
+        double w;
         cin >> u;
         cin >> v;
         cin >> w;
@@ -93,7 +95,7 @@ int main(int argc, char* argv[]) {
         g.add_edge(u,v,w);
     }
 
-    vector<int> costs(node_count,infinity);
+    vector<double> costs(node_count,infinity);
     costs[1] = 0;
     auto cost_comparer = [&costs](int x, int y) { return costs[x] > costs[y]; };
 
@@ -102,7 +104,9 @@ int main(int argc, char* argv[]) {
     // lots of gnarly off-by-one errors potentially here, but the test cases seem OK.
     for (int i = 0; i < node_count; ++i) { pq[i] = i+1; }
     pq.pop_back();
-    vector<int> prev(node_count,-1);
+    // oh goodness we don't need a map, but there's all these off-by-one if the
+    // input graph has 0 or 1 as the smallest node index.
+    map<int,int> prev;
 
     make_heap(begin(pq), end(pq), cost_comparer);
 
@@ -129,18 +133,17 @@ int main(int argc, char* argv[]) {
         g.remove_node(min_node);
     }
 
-    for (int i = 2; i < prev.size(); ++i) {
-        auto u = i;
-        auto v = prev[i];
-        cout << u << " " << v << " ";
-        cout << g.edge_weight(u,v) << endl;
+    for (auto& p : prev) {
+        cout << p.first << " "
+             << p.second << " "
+             << g.edge_weight(p.first,p.second) << endl;
     }
 
-    int weight = 0;
+    double weight = 0;
 
-    for (int i = 2; i < prev.size(); ++i) {
-        auto u = i;
-        auto v = prev[i];
+    for (auto& p : prev) {
+        auto u = p.first;
+        auto v = prev[u];
         weight += g.edge_weight(u,v);
     }
     cout << weight << endl;

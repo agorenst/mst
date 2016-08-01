@@ -2,3 +2,4 @@ input_spoj: http://www.spoj.com/problems/MST/
 input_dpv: http://highered.mheducation.com/sites/0073523402/index.html
 input_ahu: https://www.amazon.com/Design-Analysis-Computer-Algorithms/dp/0201000296/
 
+big ones, not included (yet?): http://algs4.cs.princeton.edu/43mst/

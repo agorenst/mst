@@ -14,15 +14,15 @@ using namespace std;
 struct edge {
     int u = -1;
     int v = -1;
-    int w = -1;
+    double w = -1;
     public:
     edge() {}
-    edge(int u, int v, int w): u(u), v(v), w(w) {}
+    edge(int u, int v, double w): u(u), v(v), w(w) {}
 };
 
 
 ostream& operator<<(ostream& o, const edge& e) {
-    o << "(" << e.u << " " << e.v << " " << e.w << ")";
+    o << e.u << " " << e.v << " " << e.w;
     return o;
 }
 
@@ -87,7 +87,8 @@ int main(int argc, char* argv[]) {
     disjoint_unions unions(node_count+1);
 
     for (int i = 0; i < edge_count; ++i) {
-        int u, v, w;
+        int u, v;
+        double w;
         cin >> u;
         cin >> v;
         cin >> w;
@@ -115,13 +116,12 @@ int main(int argc, char* argv[]) {
     }
     // That's the whole algorithm! Now we output the result.
 
-    cout << "MST" << endl;
     for (int i = 0; i < s; ++i) {
         cout << MST[i] << endl;
     }
-    int total_weight = 0;
+    double total_weight = 0;
     for (int i = 0; i < s; ++i) {
         total_weight += MST[i].w;
     }
-    cout << "Total weight: " << total_weight << endl;
+    cout << total_weight << endl;
 }
